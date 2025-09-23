@@ -1,0 +1,65 @@
+{% comment %}
+  Renders a single FAQ accordion row from dynamic content
+
+  Accepts:
+  - question: {String} The FAQ question text
+  - answer: {String} The FAQ answer text
+  - open_first_item: {Boolean} Whether to open the first item by default
+  - is_first: {Boolean} Whether this is the first row
+  - answer_type_preset: {String} Typography preset for the answer
+
+  Usage:
+  {% render '_accordion-row-dynamic',
+    question: question,
+    answer: answer,
+    open_first_item: open_first_item,
+    is_first: forloop.first,
+    answer_type_preset: answer_type_preset
+  %}
+{% endcomment %}
+
+<accordion-custom
+  {% if open_first_item and is_first %}
+    open-by-default-on-desktop
+    open-by-default-on-mobile
+  {% endif %}
+>
+  <details class="details" data-testid="accordion-details">
+    <summary class="details__header">
+      {{ question }}
+      <span class="svg-wrapper icon-caret icon-animated">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+      <span class="svg-wrapper icon-plus">
+        {{- 'icon-plus.svg' | inline_asset_content -}}
+      </span>
+    </summary>
+
+    <div class="details-content">
+      <div class="faq-answer" style="
+        font-family: var(--font-{{ answer_type_preset }}--family);
+        font-style: var(--font-{{ answer_type_preset }}--style);
+        font-weight: var(--font-{{ answer_type_preset }}--weight);
+        font-size: var(--font-{{ answer_type_preset }}--size);
+        line-height: var(--font-{{ answer_type_preset }}--line-height);
+        text-transform: var(--font-{{ answer_type_preset }}--case);
+      ">
+        {{ answer }}
+      </div>
+    </div>
+  </details>
+</accordion-custom>
+
+{% stylesheet %}
+  .faq-answer {
+    line-height: var(--line-height--body-normal);
+  }
+
+  .faq-answer p {
+    margin-block-end: var(--margin-sm);
+  }
+
+  .faq-answer p:last-child {
+    margin-block-end: 0;
+  }
+{% endstylesheet %}
