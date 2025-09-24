@@ -1,0 +1,138 @@
+{% assign block_settings = block.settings %}
+
+{% capture children %}
+  <div
+    class="tab__content spacing-style{% if block_settings.inherit_color_scheme == false %} color-{{ block_settings.color_scheme }}{% endif %}"
+    style="{% render 'spacing-style', settings: block_settings %}"
+  >
+    <div class="tab__content-inner">
+      {% content_for 'blocks' %}
+    </div>
+  </div>
+{% endcapture %}
+
+{{ children }}
+
+{% stylesheet %}
+  .tab__content {
+    width: 100%;
+  }
+
+  .tab__content-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--padding-sm);
+  }
+
+  .tab__content.background-transparent {
+    background-color: transparent;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.tab",
+  "tag": null,
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "tab_title",
+      "label": "t:settings.tab_title",
+      "default": "Tab"
+    },
+    {
+      "type": "checkbox",
+      "id": "active_by_default",
+      "label": "t:settings.active_by_default",
+      "default": false,
+      "info": "t:info.only_first_active_tab_will_be_used"
+    },
+    {
+      "type": "header",
+      "content": "t:content.appearance"
+    },
+    {
+      "type": "checkbox",
+      "id": "inherit_color_scheme",
+      "label": "t:settings.inherit_color_scheme",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ block.settings.inherit_color_scheme == false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.tab",
+      "settings": {
+        "tab_title": "Tab"
+      },
+      "blocks": {
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Tab content goes here.</p>"
+          }
+        }
+      },
+      "block_order": ["text"]
+    }
+  ]
+}
+{% endschema %}
