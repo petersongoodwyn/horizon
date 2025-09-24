@@ -2,15 +2,24 @@ class TabbedContent extends HTMLElement {
   constructor() {
     super();
     this.tablist = this.querySelector('[role="tablist"]');
-    this.tabs = this.querySelectorAll('[role="tab"]');
-    this.panels = this.querySelectorAll('[role="tabpanel"]');
-    this.isVertical = this.tablist?.getAttribute('aria-orientation') === 'vertical';
+    this.panelsContainer = this.querySelector('.tabbed-content__panels');
+    this.tabBlocks = this.querySelectorAll('.tabbed-content__tab-block');
 
     this.init();
   }
 
   init() {
-    if (!this.tablist || !this.tabs.length || !this.panels.length) return;
+    if (!this.tablist || !this.panelsContainer || !this.tabBlocks.length) return;
+
+    // Move tab buttons and panels to their correct containers
+    this.organizeTabElements();
+
+    // Get organized tabs and panels
+    this.tabs = this.querySelectorAll('[role="tab"]');
+    this.panels = this.querySelectorAll('[role="tabpanel"]');
+    this.isVertical = this.tablist?.getAttribute('aria-orientation') === 'vertical';
+
+    if (!this.tabs.length || !this.panels.length) return;
 
     // Set initial active tab
     const initialTab = parseInt(this.getAttribute('initial-tab') || '0');
@@ -21,6 +30,29 @@ class TabbedContent extends HTMLElement {
       tab.addEventListener('click', () => this.setActiveTab(index));
       tab.addEventListener('keydown', (e) => this.handleKeydown(e, index));
     });
+  }
+
+  organizeTabElements() {
+    // Sort tab blocks by their data-tab-index to maintain order
+    const sortedTabBlocks = Array.from(this.tabBlocks).sort((a, b) => {
+      return parseInt(a.dataset.tabIndex) - parseInt(b.dataset.tabIndex);
+    });
+
+    sortedTabBlocks.forEach((tabBlock) => {
+      const tabButton = tabBlock.querySelector('[data-tab-button]');
+      const tabPanel = tabBlock.querySelector('[data-tab-panel]');
+
+      if (tabButton && tabPanel) {
+        // Move tab button to tablist
+        this.tablist.appendChild(tabButton);
+
+        // Move tab panel to panels container
+        this.panelsContainer.appendChild(tabPanel);
+      }
+    });
+
+    // Remove now-empty tab blocks
+    this.tabBlocks.forEach(block => block.remove());
   }
 
   setActiveTab(index) {

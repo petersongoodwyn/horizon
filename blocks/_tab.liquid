@@ -1,19 +1,68 @@
 {% assign block_settings = block.settings %}
+{%- assign block_index = section.blocks | find_index: 'id', block.id -%}
+{%- assign section_index = section.index -%}
 
-{% capture children %}
-  <div
-    class="tab__content spacing-style{% if block_settings.inherit_color_scheme == false %} color-{{ block_settings.color_scheme }}{% endif %}"
-    style="{% render 'spacing-style', settings: block_settings %}"
+{% liquid
+  assign tab_id = 'tab-' | append: section.id | append: '-' | append: block_index | plus: 1
+  assign panel_id = 'panel-' | append: section.id | append: '-' | append: block_index | plus: 1
+  assign is_active = false
+
+  assign first_active_found = false
+  for section_block in section.blocks
+    if section_block.settings.active_by_default and first_active_found == false
+      if section_block.id == block.id
+        assign is_active = true
+      endif
+      assign first_active_found = true
+      break
+    endif
+  endfor
+
+  if first_active_found == false and block_index == 0
+    assign is_active = true
+  endif
+%}
+
+<div class="tabbed-content__tab-block" data-tab-index="{{ block_index }}">
+  <!-- Tab Button (will be moved to tablist by JavaScript) -->
+  <button
+    role="tab"
+    id="{{ tab_id }}"
+    aria-controls="{{ panel_id }}"
+    aria-selected="{{ is_active }}"
+    tabindex="{% if is_active %}0{% else %}-1{% endif %}"
+    class="tabbed-content__tab{% if is_active %} tabbed-content__tab--active{% endif %}"
+    data-tab-button
+    {{ block.shopify_attributes }}
   >
-    <div class="tab__content-inner">
-      {% content_for 'blocks' %}
+    {{ block_settings.title | default: 'Tab' }}
+  </button>
+
+  <!-- Tab Panel (will be moved to panels container by JavaScript) -->
+  <div
+    role="tabpanel"
+    id="{{ panel_id }}"
+    aria-labelledby="{{ tab_id }}"
+    class="tabbed-content__panel{% if is_active %} tabbed-content__panel--active{% endif %}"
+    {% unless is_active %}hidden{% endunless %}
+    data-tab-panel
+  >
+    <div
+      class="tab__content spacing-style{% if block_settings.inherit_color_scheme == false %} color-{{ block_settings.color_scheme }}{% endif %}"
+      style="{% render 'spacing-style', settings: block_settings %}"
+    >
+      <div class="tab__content-inner">
+        {% content_for 'blocks' %}
+      </div>
     </div>
   </div>
-{% endcapture %}
-
-{{ children }}
+</div>
 
 {% stylesheet %}
+  .tabbed-content__tab-block {
+    display: none;
+  }
+
   .tab__content {
     width: 100%;
   }
@@ -44,7 +93,7 @@
   "settings": [
     {
       "type": "text",
-      "id": "tab_title",
+      "id": "title",
       "label": "t:settings.tab_title",
       "default": "Tab"
     },
@@ -121,7 +170,7 @@
     {
       "name": "t:names.tab",
       "settings": {
-        "tab_title": "Tab"
+        "title": "Tab"
       },
       "blocks": {
         "text": {
