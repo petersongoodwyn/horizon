@@ -34,12 +34,7 @@
       </div>
 
       <div class="tabbed-content__blocks">
-        {% for block in section.blocks %}
-          {% capture block_content %}{% content_for 'block', type: '_tab', id: 'block.id' %}{% endcapture %}
-          {% if block_content != blank %}
-            {{ block_content }}
-          {% endif %}
-        {% endfor %}
+        {% content_for 'blocks' %}
       </div>
     {% else %}
       <div class="tabbed-content__empty">

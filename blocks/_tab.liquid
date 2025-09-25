@@ -2,6 +2,8 @@
 {%- assign block_index = section.blocks | find_index: 'id', block.id -%}
 {%- assign section_index = section.index -%}
 
+{%- if block_settings.title != blank and block_settings.rich_text != blank -%}
+
 {% liquid
   assign tab_id = 'tab-' | append: section.id | append: '-' | append: block_index | plus: 1
   assign panel_id = 'panel-' | append: section.id | append: '-' | append: block_index | plus: 1
@@ -58,6 +60,8 @@
     </div>
   </div>
 </div>
+
+{%- endif -%}
 
 {% stylesheet %}
   .tabbed-content__tab-block {
