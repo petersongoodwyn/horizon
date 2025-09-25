@@ -2,6 +2,8 @@
 {%- assign block_index = section.blocks | find_index: 'id', block.id -%}
 {%- assign section_index = section.index -%}
 
+{%- if block_settings.title != blank and block_settings.rich_text != blank -%}
+
 {% liquid
   assign tab_id = 'tab-' | append: section.id | append: '-' | append: block_index | plus: 1
   assign panel_id = 'panel-' | append: section.id | append: '-' | append: block_index | plus: 1
@@ -50,15 +52,16 @@
     data-tab-panel
   >
     <div
-      class="tab__content spacing-style{% if block_settings.inherit_color_scheme == false %} color-{{ block_settings.color_scheme }}{% endif %}"
-      style="{% render 'spacing-style', settings: block_settings %}"
+      class="tab__content{% if block_settings.inherit_color_scheme == false %} color-{{ block_settings.color_scheme }}{% endif %}"
     >
       <div class="tab__content-inner">
-        {% content_for 'blocks' %}
+        {{ block_settings.rich_text }}
       </div>
     </div>
   </div>
 </div>
+
+{%- endif -%}
 
 {% stylesheet %}
   .tabbed-content__tab-block {
@@ -84,20 +87,18 @@
 {
   "name": "t:names.tab",
   "tag": null,
-  "blocks": [
-    {
-      "type": "@theme"
-    },
-    {
-      "type": "@app"
-    }
-  ],
   "settings": [
     {
       "type": "text",
       "id": "title",
       "label": "t:settings.tab_title",
       "default": "Tab"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text",
+      "label": "Content",
+      "default": "<p>Enter your tab content here.</p>"
     },
     {
       "type": "checkbox",
@@ -122,50 +123,6 @@
       "label": "t:settings.color_scheme",
       "default": "scheme-1",
       "visible_if": "{{ block.settings.inherit_color_scheme == false }}"
-    },
-    {
-      "type": "header",
-      "content": "t:content.padding"
-    },
-    {
-      "type": "range",
-      "id": "padding-block-start",
-      "label": "t:settings.top",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 24
-    },
-    {
-      "type": "range",
-      "id": "padding-block-end",
-      "label": "t:settings.bottom",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 24
-    },
-    {
-      "type": "range",
-      "id": "padding-inline-start",
-      "label": "t:settings.left",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 0
-    },
-    {
-      "type": "range",
-      "id": "padding-inline-end",
-      "label": "t:settings.right",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 0
     }
   ],
   "presets": [
@@ -174,15 +131,6 @@
       "settings": {
         "title": "Tab"
       },
-      "blocks": {
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Tab content goes here.</p>"
-          }
-        }
-      },
-      "block_order": ["text"]
     }
   ]
 }

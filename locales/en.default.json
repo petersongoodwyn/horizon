@@ -306,6 +306,15 @@
     "blog_post_date": "Date",
     "blog_post_description": "An excerpt of your blog post's content"
   },
+  "sections": {
+    "tabbed_content_dynamic": {
+      "title": "Tabbed Content (Dynamic)",
+      "description": "This section automatically creates tabs from the current product's custom.tabs metafield.",
+      "product_template_only": "Note: This section only works on product templates.",
+      "no_metafield": "No custom.tabs metafield found for this product.",
+      "no_content": "The custom.tabs metafield exists but all fields are empty."
+    }
+  },
   "products": {
     "product": {
       "add_to_cart": "Add to cart",
