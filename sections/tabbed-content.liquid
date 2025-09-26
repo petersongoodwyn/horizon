@@ -1,5 +1,46 @@
 {% liquid
-  assign tab_count = section.blocks.size
+  # Discover tab metafields from product
+  assign discovered_tabs = blank
+  assign tab_pairs = blank
+
+  if product != blank
+    # Create array to store discovered tab pairs
+    assign tab_pairs = blank
+
+    # Loop through numbers 1-20 to find tab pairs
+    for i in (1..20)
+      assign header_key = 'tab_' | append: i | append: '_heading'
+      assign content_key = 'tab_' | append: i
+
+      assign tab_header = product.metafields.custom[header_key]
+      assign tab_content = product.metafields.custom[content_key]
+
+      # Only include if both header and content exist and are not empty
+      if tab_header != blank and tab_content != blank and tab_header.value != blank and tab_content.value != blank
+        assign tab_pair = blank
+        assign tab_pair = tab_pair | append: tab_header.value | append: '|||' | append: tab_content
+
+        if tab_pairs == blank
+          assign tab_pairs = tab_pair
+        else
+          assign tab_pairs = tab_pairs | append: '^^^' | append: tab_pair
+        endif
+      endif
+    endfor
+
+    # Convert to array
+    if tab_pairs != blank
+      assign discovered_tabs = tab_pairs | split: '^^^'
+    endif
+  endif
+
+  # Set tab count and active index based on discovered tabs
+  if discovered_tabs != blank
+    assign tab_count = discovered_tabs.size
+  else
+    assign tab_count = section.blocks.size
+  endif
+
   assign active_tab_index = 0
 
   for block in section.blocks
@@ -15,6 +56,7 @@
   class="spacing-style section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
   style="{% render 'spacing-padding', settings: section.settings %}"
 >
+
   <tabbed-content
     class="tabbed-content tabbed-content--{{ section.settings.tab_orientation }}"
     initial-tab="{{ active_tab_index }}"
@@ -34,7 +76,70 @@
       </div>
 
       <div class="tabbed-content__blocks">
+        <!-- Dynamic tabs from metafields -->
+        {% if discovered_tabs != blank %}
+          {% for i in (1..20) %}
+            {% assign header_key = 'tab_' | append: i | append: '_heading' %}
+            {% assign content_key = 'tab_' | append: i %}
+            {% assign tab_header = product.metafields.custom[header_key] %}
+            {% assign tab_content = product.metafields.custom[content_key] %}
+
+            {% if tab_header != blank and tab_content != blank and tab_header.value != blank and tab_content.value != blank %}
+              {% content_for 'block', id: 'static-tab-{{ i }}', type: '_tab', tab_header: tab_header.value, tab_content: tab_content %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Manual/static tabs -->
         {% content_for 'blocks' %}
+      </div>
+
+      <!-- Mobile accordion interface -->
+      <div class="tabbed-content__accordion">
+        <!-- Dynamic accordion items from metafields -->
+        {% if discovered_tabs != blank %}
+          {% for i in (1..20) %}
+            {% assign header_key = 'tab_' | append: i | append: '_heading' %}
+            {% assign content_key = 'tab_' | append: i %}
+            {% assign tab_header = product.metafields.custom[header_key] %}
+            {% assign tab_content = product.metafields.custom[content_key] %}
+
+            {% if tab_header != blank and tab_content != blank and tab_header.value != blank and tab_content.value != blank %}
+              <details class="tabbed-content__accordion-item">
+                <summary class="tabbed-content__accordion-summary">
+                  {{ tab_header.value }}
+                  <span class="tabbed-content__accordion-icon">
+                    <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                      <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </summary>
+                <div class="tabbed-content__accordion-content">
+                  {{ tab_content | metafield_tag }}
+                </div>
+              </details>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <!-- Manual/static accordion items -->
+        {% for block in section.blocks %}
+          {% if block.type == '_tab' %}
+            <details class="tabbed-content__accordion-item">
+              <summary class="tabbed-content__accordion-summary">
+                {{ block.settings.title | default: 'Tab' }}
+                <span class="tabbed-content__accordion-icon">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                    <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </summary>
+              <div class="tabbed-content__accordion-content">
+                {{ block.settings.rich_text }}
+              </div>
+            </details>
+          {% endif %}
+        {% endfor %}
       </div>
     {% else %}
       <div class="tabbed-content__empty">
@@ -150,6 +255,68 @@
   }
 
   @media (max-width: 749px) {
+    /* Hide tabs interface on mobile */
+    .tabbed-content__tablist,
+    .tabbed-content__panels {
+      display: none;
+    }
+
+    /* Show accordion interface on mobile */
+    .tabbed-content__accordion {
+      display: block;
+    }
+
+    .tabbed-content__tab-block {
+      display: block !important;
+      margin-bottom: var(--padding-sm);
+    }
+
+    /* Style accordion items like theme accordions */
+    .tabbed-content__accordion-item {
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      margin-bottom: var(--padding-xs);
+    }
+
+    .tabbed-content__accordion-summary {
+      padding: var(--padding-md) var(--padding-lg);
+      background: var(--color-background);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-heading--family);
+      font-size: var(--font-size--lg);
+      font-weight: var(--font-weight--medium);
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .tabbed-content__accordion-summary:hover {
+      background: var(--color-background-accent);
+    }
+
+    .tabbed-content__accordion-content {
+      padding: var(--padding-lg) var(--padding-md);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .tabbed-content__accordion-icon {
+      transition: transform 0.2s ease;
+    }
+
+    .tabbed-content__accordion-item[open] .tabbed-content__accordion-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  @media (min-width: 750px) {
+    /* Hide accordion interface on desktop */
+    .tabbed-content__accordion {
+      display: none;
+    }
+
     .tabbed-content--vertical {
       flex-direction: column;
     }

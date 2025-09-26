@@ -2,8 +2,6 @@
 {%- assign block_index = section.blocks | find_index: 'id', block.id -%}
 {%- assign section_index = section.index -%}
 
-{%- if block_settings.title != blank and block_settings.rich_text != blank -%}
-
 {% liquid
   assign tab_id = 'tab-' | append: section.id | append: '-' | append: block_index | plus: 1
   assign panel_id = 'panel-' | append: section.id | append: '-' | append: block_index | plus: 1
@@ -38,7 +36,7 @@
     {{ block.shopify_attributes }}
   >
     <div class="tab-border">
-    {{ block_settings.title | default: 'Tab' }}
+    {{ tab_header | default: block_settings.title | default: 'Tab' }}
     </div>
   </button>
 
@@ -55,13 +53,16 @@
       class="tab__content{% if block_settings.inherit_color_scheme == false %} color-{{ block_settings.color_scheme }}{% endif %}"
     >
       <div class="tab__content-inner">
-        {{ block_settings.rich_text }}
+        {% if tab_content != blank %}
+          {{ tab_content | metafield_tag }}
+        {% else %}
+          {{ block_settings.rich_text }}
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-{%- endif -%}
 
 {% stylesheet %}
   .tabbed-content__tab-block {
