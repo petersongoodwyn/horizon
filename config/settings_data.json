@@ -10,6 +10,7 @@
 {
   "current": {
     "logo": "shopify://shop_images/diyre-logo-512.png",
+    "favicon": "shopify://shop_images/favicon.png",
     "type_size_paragraph": "14",
     "type_font_h1": "heading",
     "type_line_height_h1": "display-tight",

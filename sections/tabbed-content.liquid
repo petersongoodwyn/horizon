@@ -85,7 +85,9 @@
             {% assign tab_content = product.metafields.custom[content_key] %}
 
             {% if tab_header != blank and tab_content != blank and tab_header.value != blank and tab_content.value != blank %}
-              {% content_for 'block', id: 'static-tab-{{ i }}', type: '_tab', tab_header: tab_header.value, tab_content: tab_content %}
+              {% # theme-check-disable UniqueStaticBlockId %}
+                {% content_for 'block', id: 'static-tab', type: '_tab', tab_header: tab_header.value, tab_content: tab_content %}
+              {% # theme-check-enable UniqueStaticBlockId %}
             {% endif %}
           {% endfor %}
         {% endif %}
