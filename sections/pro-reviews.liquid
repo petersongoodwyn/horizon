@@ -1,25 +1,50 @@
-{% liquid
-  # Check if we have pro review metafields from product
-  assign has_pro_reviews = false
-  if product != blank and product.metafields.custom.pros.value != blank
-    assign has_pro_reviews = true
-  endif
-%}
+{% comment %}
+  Pro Reviews section that automatically generates review blocks from
+  content stored in the metaobject linked to the product in the custom.pros metafield.
+  Only renders if the product has a metaobject linked in the custom.pros metafield.
 
+  Expected metaobject structure:
+  - pros.avatar_1, pros.review_1, pros.name_1, pros.credits_1, etc.
 
-{% capture children %}
-  <!-- Dynamic pro reviews from metafields -->
-  {% if has_pro_reviews %}
+  Structure: displays review blocks with avatar, quote, name, and credits
+{% endcomment %}
+
+{% assign product_pros = product.metafields.custom.pros %}
+
+{% comment %} Check if product has pro review data and if any review sets exist {% endcomment %}
+{% assign has_pro_reviews = false %}
+{% if product_pros %}
+  {% for i in (1..20) %}
+    {% assign avatar_key = 'avatar_' | append: i %}
+    {% assign review_key = 'review_' | append: i %}
+    {% assign name_key = 'name_' | append: i %}
+    {% assign credits_key = 'credits_' | append: i %}
+
+    {% assign pro_avatar = product_pros.value[avatar_key].value %}
+    {% assign pro_review = product_pros.value[review_key] %}
+    {% assign pro_name = product_pros.value[name_key] %}
+    {% assign pro_credits = product_pros.value[credits_key] %}
+
+    {% if pro_avatar != blank or pro_review != blank or pro_name != blank or pro_credits != blank %}
+      {% assign has_pro_reviews = true %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if has_pro_reviews %}
+  {% capture children %}
+    <!-- Dynamic pro reviews from metafields -->
     {% for i in (1..20) %}
       {% assign avatar_key = 'avatar_' | append: i %}
       {% assign review_key = 'review_' | append: i %}
       {% assign name_key = 'name_' | append: i %}
       {% assign credits_key = 'credits_' | append: i %}
 
-      {% assign pro_avatar = product.metafields.custom.pros.value[avatar_key].value %}
-      {% assign pro_review = product.metafields.custom.pros.value[review_key] %}
-      {% assign pro_name = product.metafields.custom.pros.value[name_key] %}
-      {% assign pro_credits = product.metafields.custom.pros.value[credits_key] %}
+      {% assign pro_avatar = product_pros.value[avatar_key].value %}
+      {% assign pro_review = product_pros.value[review_key] %}
+      {% assign pro_name = product_pros.value[name_key] %}
+      {% assign pro_credits = product_pros.value[credits_key] %}
 
       {% if pro_avatar != blank or pro_review != blank or pro_name != blank or pro_credits != blank %}
         {% # theme-check-disable UniqueStaticBlockId %}
@@ -27,10 +52,12 @@
         {% # theme-check-enable UniqueStaticBlockId %}
       {% endif %}
     {% endfor %}
-  {% endif %}
-{% endcapture %}
 
-{% render 'section', section: section, children: children %}
+    {% content_for 'blocks' %}
+  {% endcapture %}
+
+  {% render 'section', section: section, children: children %}
+{% endif %}
 
 {% schema %}
 {
