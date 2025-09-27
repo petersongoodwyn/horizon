@@ -1,0 +1,62 @@
+{% liquid
+  # Use dynamic parameters passed from the product-details-accordion block
+  assign row_heading = detail_heading
+  assign row_content = detail_content
+%}
+
+<accordion-custom
+  {% if block.settings.open_by_default %}
+    open-by-default-on-desktop
+    open-by-default-on-mobile
+  {% endif %}
+>
+  <details
+    class="details"
+    data-testid="accordion-details"
+    {{ block.shopify_attributes }}
+  >
+    <summary class="details__header">
+      {{ row_heading }}
+      <span class="svg-wrapper icon-caret icon-animated">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+      <span class="svg-wrapper icon-plus">
+        {{- 'icon-plus.svg' | inline_asset_content -}}
+      </span>
+    </summary>
+
+    <div class="details-content">
+      {% if row_content != blank %}
+        <div class="product-detail__content">
+          {{ row_content }}
+        </div>
+      {% endif %}
+    </div>
+  </details>
+</accordion-custom>
+
+{% stylesheet %}
+  .product-detail__content {
+    color: rgba(var(--color-foreground), 0.8);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product Detail Row",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "open_by_default",
+      "label": "t:settings.open_row_by_default",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Detail Row"
+    }
+  ]
+}
+{% endschema %}
